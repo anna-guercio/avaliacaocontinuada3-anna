@@ -1,6 +1,9 @@
 package br.com.bandtec.projetocontinuada3;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 @Entity
 public class Pedido {
@@ -10,8 +13,11 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank
     private String nomeCliente; // nome do cliente que fez o pedido
 
+    @Positive
+    @NotNull
     private Double valor; // qual o valor final do pedido
 
     @ManyToOne

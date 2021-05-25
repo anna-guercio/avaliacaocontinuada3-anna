@@ -3,6 +3,8 @@ package br.com.bandtec.projetocontinuada3;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Entity
@@ -13,8 +15,10 @@ public class Funcionario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank
     private String nome; // nome do funcionario
 
+    @Positive
     private Integer caixa; // Qual caixa este funcionario pertence (ex: caixa 1, caixa 2...)
 
     @OneToMany(mappedBy = "funcionario") // Atributo em Pedido que tem relacionamento para Funcionario é "funcionario"
