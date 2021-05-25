@@ -1,4 +1,4 @@
-package br.com.bandtec.projetocontinuada3;
+package br.com.bandtec.projetocontinuada3.dominio;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

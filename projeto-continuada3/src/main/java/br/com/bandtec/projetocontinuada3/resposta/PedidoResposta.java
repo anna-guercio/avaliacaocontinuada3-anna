@@ -1,4 +1,6 @@
-package br.com.bandtec.projetocontinuada3;
+package br.com.bandtec.projetocontinuada3.resposta;
+
+import br.com.bandtec.projetocontinuada3.dominio.Pedido;
 
 public class PedidoResposta {
 

@@ -1,5 +1,6 @@
-package br.com.bandtec.projetocontinuada3;
+package br.com.bandtec.projetocontinuada3.repositorio;
 
+import br.com.bandtec.projetocontinuada3.dominio.Pedido;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,4 +1,6 @@
-package br.com.bandtec.projetocontinuada3;
+package br.com.bandtec.projetocontinuada3.dominio;
+
+import br.com.bandtec.projetocontinuada3.dominio.Funcionario;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
