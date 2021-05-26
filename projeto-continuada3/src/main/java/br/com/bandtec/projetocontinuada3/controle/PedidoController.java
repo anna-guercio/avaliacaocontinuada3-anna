@@ -1,5 +1,7 @@
 package br.com.bandtec.projetocontinuada3.controle;
 
+import br.com.bandtec.projetocontinuada3.Agendamento;
+import br.com.bandtec.projetocontinuada3.PedidoProtocolo;
 import br.com.bandtec.projetocontinuada3.dominio.PedidoRequisicao;
 import br.com.bandtec.projetocontinuada3.utils.FilaObj;
 import br.com.bandtec.projetocontinuada3.utils.PilhaObj;
@@ -12,8 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.nio.file.Files;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,11 +25,15 @@ public class PedidoController {
     private PilhaObj<PedidoRequisicao> pilha = new PilhaObj<>(10);
     private static FilaObj<PedidoRequisicao> fila = new FilaObj<>(10);
 
+
     @Autowired
     private PedidoRepository repository;
 
     @Autowired
     private FuncionarioRepository funcionarioRepository;
+
+    @Autowired
+    private Agendamento agendamento;
 
     // Consulta todos os pedidos
     @GetMapping
@@ -84,8 +90,12 @@ public class PedidoController {
         return ResponseEntity.status(204).body("Não há operações para serem desfeitas");
     }
 
-    // Get Fila
-    public static FilaObj<PedidoRequisicao> getFila() {
-        return fila;
+    // Endpoint especial para requisição assíncrona
+    @PostMapping("/requisicao")
+    public ResponseEntity postRequisicao(@RequestBody @Valid Pedido novaRequisicao) {
+        String uuid = UUID.randomUUID().toString();
+        PedidoProtocolo protocolo = new PedidoProtocolo(uuid, "Salvando requisição", novaRequisicao);
+        agendamento.getFila().insert(protocolo);
+        return ResponseEntity.status(202).body("Protocolo: " + protocolo.getId());
     }
 }
