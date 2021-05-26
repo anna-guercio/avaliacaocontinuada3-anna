@@ -1,7 +1,6 @@
 package br.com.bandtec.projetocontinuada3.controle;
 
-import br.com.bandtec.projetocontinuada3.PilhaObj;
-import br.com.bandtec.projetocontinuada3.dominio.Pedido;
+import br.com.bandtec.projetocontinuada3.utils.PilhaObj;
 import br.com.bandtec.projetocontinuada3.repositorio.FuncionarioRepository;
 import br.com.bandtec.projetocontinuada3.dominio.Funcionario;
 import br.com.bandtec.projetocontinuada3.resposta.FuncionarioResposta;

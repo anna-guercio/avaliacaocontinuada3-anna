@@ -1,4 +1,4 @@
-package br.com.bandtec.projetocontinuada3;
+package br.com.bandtec.projetocontinuada3.utils;
 
 // Representa uma fila de objetos de tipo genérico
 public class FilaObj<T> {

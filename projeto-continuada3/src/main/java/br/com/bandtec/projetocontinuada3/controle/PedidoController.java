@@ -1,6 +1,8 @@
 package br.com.bandtec.projetocontinuada3.controle;
 
-import br.com.bandtec.projetocontinuada3.PilhaObj;
+import br.com.bandtec.projetocontinuada3.dominio.PedidoRequisicao;
+import br.com.bandtec.projetocontinuada3.utils.FilaObj;
+import br.com.bandtec.projetocontinuada3.utils.PilhaObj;
 import br.com.bandtec.projetocontinuada3.repositorio.FuncionarioRepository;
 import br.com.bandtec.projetocontinuada3.repositorio.PedidoRepository;
 import br.com.bandtec.projetocontinuada3.dominio.Pedido;
@@ -10,13 +12,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.nio.file.Files;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/pedidos")
 public class PedidoController {
 
-    private PilhaObj<Pedido> pilha = new PilhaObj<>(10);
+    private PilhaObj<PedidoRequisicao> pilha = new PilhaObj<>(10);
+    private static FilaObj<PedidoRequisicao> fila = new FilaObj<>(10);
 
     @Autowired
     private PedidoRepository repository;
@@ -26,16 +31,17 @@ public class PedidoController {
 
     // Consulta todos os pedidos
     @GetMapping
-    public ResponseEntity getPedidos(){
+    public ResponseEntity getPedidos() {
         return ResponseEntity.status(200).body(
                 repository.findAll().stream().map(PedidoResposta::new).collect(Collectors.toList()));
     }
 
     // Cria um novo pedido se existir o id daquele funcionario
     @PostMapping
-    public ResponseEntity postPedido(@RequestBody @Valid Pedido novoPedido){
+    public ResponseEntity postPedido(@RequestBody @Valid Pedido novoPedido) {
         if (funcionarioRepository.existsById(novoPedido.getFuncionario().getId())) {
-            pilha.push(novoPedido);
+            pilha.push(new PedidoRequisicao(novoPedido, "post"));
+            fila.insert(new PedidoRequisicao(novoPedido, "post"));
             repository.save(novoPedido);
             return ResponseEntity.status(201).build();
         } else {
@@ -45,7 +51,7 @@ public class PedidoController {
 
     // Consulta todos os pedidos de um determinado funcionario (de acordo com o idFuncionario)
     @GetMapping("/funcionario/{idFuncionario}")
-    public ResponseEntity getPedidosPorFuncionario(@PathVariable Integer idFuncionario){
+    public ResponseEntity getPedidosPorFuncionario(@PathVariable Integer idFuncionario) {
         return ResponseEntity.status(200).body(repository.findByFuncionarioId(idFuncionario));
     }
 
@@ -53,6 +59,8 @@ public class PedidoController {
     @DeleteMapping("/{idPedido}")
     public ResponseEntity deletePedido(@PathVariable Integer idPedido) {
         if (repository.existsById(idPedido)) {
+            Optional<Pedido> pedido = repository.findById(idPedido);
+            pilha.push(new PedidoRequisicao(pedido.get(), "delete"));
             repository.deleteById(idPedido);
             return ResponseEntity.status(200).build();
         } else {
@@ -61,13 +69,23 @@ public class PedidoController {
     }
 
     // Endpoint para DESFAZER
-    @DeleteMapping("/desfazer")
+    @GetMapping("/desfazer")
     public ResponseEntity desfazer() {
         if (!pilha.isEmpty()) {
-            repository.deleteById(pilha.peek().getId());
-            return ResponseEntity.status(200).build();
-        } else {
-            return ResponseEntity.status(404).body("Não há operações para serem desfeitas");
+            PedidoRequisicao pedidoRequisicao = pilha.pop();
+            if (pedidoRequisicao.getMetodo().equals("post")) {
+                repository.deleteById(pedidoRequisicao.getPedido().getId());
+                return ResponseEntity.status(200).build();
+            } else if (pedidoRequisicao.getMetodo().equals("delete")) {
+                repository.save(pedidoRequisicao.getPedido());
+                return ResponseEntity.status(200).build();
+            }
         }
+        return ResponseEntity.status(204).body("Não há operações para serem desfeitas");
+    }
+
+    // Get Fila
+    public static FilaObj<PedidoRequisicao> getFila() {
+        return fila;
     }
 }
