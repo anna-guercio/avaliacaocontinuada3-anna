@@ -57,4 +57,15 @@ public class Pedido {
     public void setFuncionario(Funcionario funcionario) {
         this.funcionario = funcionario;
     }
+
+    // .toString()
+    @Override
+    public String toString() {
+        return "Pedido{" +
+                "id=" + id +
+                ", nomeCliente='" + nomeCliente + '\'' +
+                ", valor=" + valor +
+                ", funcionario=" + funcionario +
+                '}';
+    }
 }
