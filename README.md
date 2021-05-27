@@ -2,7 +2,7 @@
 
 Anna Beatriz Guercio - ra: 02201003
 
-Utilizei o mesmo contexto da minha AC1 neste projeto, porém, agora adaptado com relacionamento entre as classes.
+Utilizei o mesmo contexto da minha AC1 neste projeto, porém, agora adaptado com relacionamento entre as classes. <br>
 
 Em um sistema de lanchonete fast-food, um funcionário trabalha anotando os pedidos no caixa. 
 Um funcionário pode ter vários pedidos durante o dia. Porém, um pedido só pode ser 
