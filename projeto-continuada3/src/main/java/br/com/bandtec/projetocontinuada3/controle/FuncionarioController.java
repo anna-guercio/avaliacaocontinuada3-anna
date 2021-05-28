@@ -1,6 +1,6 @@
 package br.com.bandtec.projetocontinuada3.controle;
 
-import br.com.bandtec.projetocontinuada3.utils.PilhaObj;
+import br.com.bandtec.projetocontinuada3.util.PilhaObj;
 import br.com.bandtec.projetocontinuada3.repositorio.FuncionarioRepository;
 import br.com.bandtec.projetocontinuada3.dominio.Funcionario;
 import br.com.bandtec.projetocontinuada3.resposta.FuncionarioResposta;
@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,8 +24,10 @@ public class FuncionarioController {
     // Consulta todos os funcionarios
     @GetMapping
     public ResponseEntity getFuncionarios() {
-        return ResponseEntity.status(200).body(
-                repository.findAll().stream().map(FuncionarioResposta::new).collect(Collectors.toList()));
+        List<Funcionario> funcionarios = repository.findAll();
+        return funcionarios.isEmpty()
+                ? ResponseEntity.status(204).build()
+                : ResponseEntity.status(200).body(funcionarios.stream().map(FuncionarioResposta::new).collect(Collectors.toList()));
     }
 
     // Criação de um novo funcionário
@@ -48,7 +51,10 @@ public class FuncionarioController {
     // Consulta o funcionario de um caixa especifico
     @GetMapping("/caixa/{caixa}")
     public ResponseEntity getFuncionarioPorCaixa(@PathVariable Integer caixa){
-        return ResponseEntity.status(200).body(repository.findByCaixa(caixa));
+        List<Funcionario> funcionariosCaixa = repository.findByCaixa(caixa);
+        return funcionariosCaixa.isEmpty()
+                ? ResponseEntity.status(204).build()
+                : ResponseEntity.status(200).body(funcionariosCaixa);
     }
 
     // Endpoint para DESFAZER

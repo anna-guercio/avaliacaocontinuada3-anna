@@ -2,6 +2,7 @@ package br.com.bandtec.projetocontinuada3.controle;
 
 import br.com.bandtec.projetocontinuada3.dominio.Funcionario;
 import br.com.bandtec.projetocontinuada3.dominio.Pedido;
+import br.com.bandtec.projetocontinuada3.dominio.PedidoRequisicao;
 import br.com.bandtec.projetocontinuada3.repositorio.FuncionarioRepository;
 import br.com.bandtec.projetocontinuada3.repositorio.PedidoRepository;
 import br.com.bandtec.projetocontinuada3.resposta.PedidoResposta;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,7 +32,6 @@ class PedidoControllerTest {
     @Autowired
     private FuncionarioController funcionarioController;
 
-
     @MockBean
     PedidoRepository pedidoRepository;
 
@@ -38,7 +39,7 @@ class PedidoControllerTest {
     FuncionarioRepository funcionarioRepository;
 
     @Test
-    @DisplayName("GET /impostos - Quando houverem registros - status 200 e número certo de registros")
+    @DisplayName("GET /pedidos - Quando houverem registros - status 200 e número certo de registros")
     void getPedidosComRegistros() {
         Pedido pedido = new Pedido();
         pedido.setNomeCliente("Anna");
@@ -59,7 +60,7 @@ class PedidoControllerTest {
     }
 
     @Test
-    @DisplayName("GET /impostos - Quando NÃO houverem registros - status 204 e sem corpo")
+    @DisplayName("GET /pedidos - Quando NÃO houverem registros - status 204 e sem corpo")
     void getPedidosSemRegistros() {
         Mockito.when(pedidoRepository.findAll()).thenReturn(new ArrayList<>());
         ResponseEntity<List<Pedido>> resposta = pedidoController.getPedidos();
@@ -67,59 +68,51 @@ class PedidoControllerTest {
         assertNull(resposta.getBody());
     }
 
-
     @Test
     void postPedidoSemErros() {
         Pedido pedido = new Pedido();
-        pedido.setId(100);
         pedido.setNomeCliente("Anna");
         pedido.setValor(15.00);
 
         Funcionario funcionario = new Funcionario();
         funcionario.setId(101);
-        funcionario.setNome("Beatriz");
-        funcionario.setCaixa(1);
-        funcionario.setPedidos(Arrays.asList(pedido));
-
         pedido.setFuncionario(funcionario);
 
-        Mockito.when(pedidoRepository.existsById(pedido.getFuncionario().getId())).thenReturn(true);
+        Mockito.when(funcionarioRepository.existsById(pedido.getFuncionario().getId())).thenReturn(true);
         ResponseEntity resposta = pedidoController.postPedido(pedido);
-
         assertEquals(201, resposta.getStatusCodeValue());
     }
 
     @Test
     void getPedidosPorFuncionario() {
         Pedido pedido = new Pedido();
-        pedido.setId(1);
-        pedido.setNomeCliente("Anna");
-        pedido.setValor(15.00);
-
         Funcionario funcionario = new Funcionario();
-        funcionario.setNome("Beatriz");
-        funcionario.setCaixa(1);
-        funcionario.setId(1);
-
-        pedido.setFuncionario(funcionario);
-
-        List<Pedido> pedidosTestes = Arrays.asList(pedido);
-
-        Mockito.when(pedidoRepository.findByFuncionarioId(1)).thenReturn(pedidosTestes);
-        ResponseEntity<List<Pedido>> pedidoTestes = pedidoController.getPedidosPorFuncionario(1);
-        assertEquals(200, pedidoTestes.getStatusCodeValue());
-        assertEquals(1, pedidoTestes.getBody().size());
+        Integer idFuncionario = 1;
+        Mockito.when(pedidoRepository.existsById(idFuncionario)).thenReturn(true);
+        ResponseEntity pedidosTestes = pedidoController.getPedidosPorFuncionario(idFuncionario);
+        assertEquals(200, pedidosTestes.getStatusCodeValue());
     }
 
     @Test
-    void deletePedido() {
+    void deletePedidoValido() {
+        Integer idPedido = 1;
+        Mockito.when(pedidoRepository.existsById(idPedido)).thenReturn(true);
+        ResponseEntity resposta = pedidoController.deletePedido(idPedido);
+        assertEquals(200, resposta.getStatusCodeValue());
     }
 
     @Test
-    void desfazer() {
+    void deletePedidoInvalido() {
+        int idPedido = 1;
+        Mockito.when(pedidoRepository.existsById(idPedido)).thenReturn(false);
+        ResponseEntity resposta = pedidoController.deletePedido(idPedido);
+        assertEquals(404, resposta.getStatusCodeValue());
     }
 
     @Test
-    void postRequisicao() {
+    void desfazer() throws InterruptedException{
+        Thread.sleep(50000);
+        ResponseEntity resposta = pedidoController.desfazer();
+        assertEquals(200, resposta);
     }
 }

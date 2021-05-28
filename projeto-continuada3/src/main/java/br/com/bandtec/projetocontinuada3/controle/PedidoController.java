@@ -1,10 +1,11 @@
 package br.com.bandtec.projetocontinuada3.controle;
 
-import br.com.bandtec.projetocontinuada3.PedidoScheduled;
-import br.com.bandtec.projetocontinuada3.PedidoProtocolo;
+import br.com.bandtec.projetocontinuada3.agendamento.PedidoScheduled;
+import br.com.bandtec.projetocontinuada3.agendamento.PedidoProtocolo;
+import br.com.bandtec.projetocontinuada3.dominio.Funcionario;
 import br.com.bandtec.projetocontinuada3.dominio.PedidoRequisicao;
-import br.com.bandtec.projetocontinuada3.utils.FilaObj;
-import br.com.bandtec.projetocontinuada3.utils.PilhaObj;
+import br.com.bandtec.projetocontinuada3.util.FilaObj;
+import br.com.bandtec.projetocontinuada3.util.PilhaObj;
 import br.com.bandtec.projetocontinuada3.repositorio.FuncionarioRepository;
 import br.com.bandtec.projetocontinuada3.repositorio.PedidoRepository;
 import br.com.bandtec.projetocontinuada3.dominio.Pedido;
@@ -18,6 +19,9 @@ import javax.validation.Valid;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,10 +31,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/pedidos")
 public class PedidoController {
 
-    private PilhaObj<PedidoRequisicao> pilha = new PilhaObj<>(10);
-    private static FilaObj<PedidoRequisicao> fila = new FilaObj<>(10);
-
-
+    private static final FilaObj<PedidoRequisicao> fila = new FilaObj<>(10);
+    private final PilhaObj<PedidoRequisicao> pilha = new PilhaObj<>(10);
     @Autowired
     private PedidoRepository repository;
 
@@ -101,6 +103,7 @@ public class PedidoController {
         return ResponseEntity.status(204).body("Não há operações para serem desfeitas");
     }
 
+
     // Endpoint especial para requisição assíncrona
     @PostMapping("/requisicao")
     public ResponseEntity postRequisicao(@RequestBody @Valid Pedido novaRequisicao) {
@@ -112,16 +115,21 @@ public class PedidoController {
 
 
     // LEITURA DE ARQUIVO - IMPORTAÇÃO DE DADOS
-
     @PostMapping("/learquivo")
-    public ResponseEntity postImportacao(@RequestParam MultipartFile arquivo) throws IOException{
+    public ResponseEntity postImportacao(@RequestParam MultipartFile arquivo) throws IOException {
         BufferedReader entrada = null;
+        byte[] conteudo = arquivo.getBytes();
+        Path path = Paths.get(arquivo.getOriginalFilename());
+        Files.write(path, conteudo);
         String registro;
         String tipoRegistro;
-        int contRegistro=0;
-        Integer idPedido, idFuncionario, caixa;
-        String nomeCliente, nomeFuncionario;
-        Double valor;
+        int contRegistro = 0;
+        Integer idPedido = 100;
+        Integer idFuncionario = 101;
+        Integer caixa = 01;
+        String nomeCliente = "";
+        String nomeFuncionario = "";
+        Double valor = 15.00;
 
         // Abre o arquivo
         try {
@@ -132,72 +140,72 @@ public class PedidoController {
 
         // Lê os registros do arquivo
         try {
-            // Lê um registro
-            registro = entrada.readLine();
+        // Lê um registro
+        registro = entrada.readLine();
 
-            while (registro != null) {
-                // Obtém o tipo do registro
-                tipoRegistro = registro.substring(0, 2); // obtém os 2 primeiros caracteres do registro
-                //    012345
-                //    00NOTA
-                if (tipoRegistro.equals("00")) {
-                    System.out.println("Header");
-                    System.out.println("Tipo de arquivo: " + registro.substring(2, 6));
-                    System.out.println("Data/hora de geração do arquivo: " + registro.substring(6,25));
-                    System.out.println("Versão do layout: " + registro.substring(25,27));
-                }
-                else if (tipoRegistro.equals("03")) {
-                    System.out.println("\nTrailer");
-                    int qtdRegistro = Integer.parseInt(registro.substring(2,12));
-                    if (qtdRegistro == contRegistro) {
-                        System.out.println("Quantidade de registros gravados compatível com quantidade lida");
-                    }
-                    else {
-                        System.out.println("Quantidade de registros gravados não confere com quantidade lida");
-                    }
-                }
-                else if (tipoRegistro.equals("01")) {
-                    if (contRegistro == 0) {
-                        System.out.println();
-                        System.out.printf("%-8s %-11s %-5s\n", "IDPEDIDO","NOMECLIENTE","VALOR");
-
-                    }
-                    else if (tipoRegistro.equals("02")) {
-                        if (contRegistro == 0) {
-                            System.out.println();
-                            System.out.printf("%-13s %-15s %-5s\n", "IDFUNCIONARIO","NOMEFUNCIONARIO","CAIXA");
-
-                        }
-
-                    idPedido = Integer.parseInt(registro.substring(2,11));
-                    nomeCliente = registro.substring(11,50);
-                    valor = Double.parseDouble(registro.substring(50,59).replace(',','.'));
-                    idFuncionario = Integer.parseInt(registro.substring(59,68));
-                    nomeFuncionario = registro.substring(68,107);
-                    caixa = Integer.parseInt(registro.substring(107,109));
-
-                    System.out.printf("%10d %-40s %10.2f %10d %-40s %2d\n", idPedido, nomeCliente, valor,
-                            idFuncionario, nomeFuncionario, caixa);
-                    contRegistro++;
-                }
-                else {
-                    System.out.println("Tipo de registro inválido");
+        while (registro != null) {
+            // Obtém o tipo do registro
+            tipoRegistro = registro.substring(0, 2); // obtém os 2 primeiros caracteres do registro
+            if (tipoRegistro.equals("00")) {
+                System.out.println("Header");
+                System.out.println("Tipo de arquivo: " + registro.substring(2, 9));
+                System.out.println("Data/hora de geração do arquivo: " + registro.substring(9, 25));
+                System.out.println("Versão do layout: " + registro.substring(25, 27));
+            } else if (tipoRegistro.equals("03")) {
+                System.out.println("\nTrailer");
+                int qtdRegistro = Integer.parseInt(registro.substring(2, 7));
+                if (qtdRegistro == contRegistro) {
+                    System.out.println("Quantidade de registros gravados compatível com quantidade lida");
+                } else {
+                    System.out.println("Quantidade de registros gravados não confere com quantidade lida");
                 }
 
-                // lê o próximo registro
-                registro = entrada.readLine();
+            } else if (tipoRegistro.equals("01")) {
+                if (contRegistro == 0) {
+                    System.out.println();
+                    System.out.printf("%-8s %-11s %-5s\n", "IDPEDIDO", "NOMECLIENTE", "VALOR");
+                }
+                idPedido = Integer.parseInt(registro.substring(2, 11).trim());
+                nomeCliente = registro.substring(11, 50).trim();
+                valor = Double.parseDouble(registro.substring(50, 59).replace(',', '.').trim());
+            } else if (tipoRegistro.equals("02")) {
+                if (contRegistro == 0) {
+                    System.out.println();
+                    System.out.printf("%-13s %-15s %-5s\n", "IDFUNCIONARIO", "NOMEFUNCIONARIO", "CAIXA");
+                }
+                idFuncionario = Integer.parseInt(registro.substring(02, 06).trim());
+                nomeFuncionario = registro.substring(06, 52).trim();
+                caixa = Integer.parseInt(registro.substring(52, 54).trim());
+
+                Funcionario funcionario = new Funcionario();
+                funcionario.setNome(nomeFuncionario);
+                funcionario.setCaixa(caixa);
+
+                Pedido pedido = new Pedido();
+                pedido.setNomeCliente(nomeCliente);
+                pedido.setValor(valor);
+                pedido.setFuncionario(funcionario);
+
+                funcionarioRepository.save(funcionario);
+                repository.save(pedido);
+
+                System.out.printf("%10d %-40s %10.2f %10d %-40s %2d\n", idPedido, nomeCliente, valor,
+                        idFuncionario, nomeFuncionario, caixa);
+                contRegistro++;
+
+            } else {
+                System.out.println("Tipo de registro inválido");
             }
-
-            // Fecha o arquivo
-            entrada.close();
-        } catch (IOException e) {
-            System.err.printf("Erro ao ler arquivo: %s.\n", e.getMessage());
+            registro = entrada.readLine();
         }
 
-    }
+        // Fecha o arquivo
+        entrada.close();
 
-    public static void main(String[] args) {
-        String nomeArq = "ArquivoNotas.txt";
-        leArquiv(nomeArq);
+        } catch(IOException e){
+            System.err.printf("Erro ao ler arquivo: %s.\n", e.getMessage());
+        }
+        return ResponseEntity.status(201).body("Criação do arquivo");
+
     }
 }
