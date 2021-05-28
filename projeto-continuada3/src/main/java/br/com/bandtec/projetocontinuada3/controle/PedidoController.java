@@ -40,7 +40,7 @@ public class PedidoController {
     private FuncionarioRepository funcionarioRepository;
 
     @Autowired
-    private PedidoScheduled agendamento;
+    private PedidoScheduled scheduled;
 
     // Consulta todos os pedidos
     @GetMapping
@@ -100,7 +100,7 @@ public class PedidoController {
                 return ResponseEntity.status(200).build();
             }
         }
-        return ResponseEntity.status(204).body("Não há operações para serem desfeitas");
+        return ResponseEntity.status(204).body("Não tem nenhuma operação a ser desfeita");
     }
 
 
@@ -108,9 +108,12 @@ public class PedidoController {
     @PostMapping("/requisicao")
     public ResponseEntity postRequisicao(@RequestBody @Valid Pedido novaRequisicao) {
         String uuid = UUID.randomUUID().toString();
-        PedidoProtocolo protocolo = new PedidoProtocolo(uuid, "Salvando requisição", novaRequisicao);
-        agendamento.getFila().insert(protocolo);
-        return ResponseEntity.status(202).body("Protocolo: " + protocolo.getId());
+        PedidoProtocolo protocolo = new PedidoProtocolo(uuid, "Salvando a requisição", novaRequisicao);
+
+        // Salvando na Fila
+        scheduled.getFila().insert(protocolo);
+        // Retorna o número do protocolo
+        return ResponseEntity.status(202).body("Protocolo = " + protocolo.getId());
     }
 
 

@@ -2,9 +2,6 @@ package br.com.bandtec.projetocontinuada3.agendamento;
 
 import br.com.bandtec.projetocontinuada3.dominio.Pedido;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 public class PedidoProtocolo {
@@ -12,7 +9,9 @@ public class PedidoProtocolo {
     // Atributos
     @Id
     private String id;
+
     private String statusProtocolo;
+
     private Pedido pedido;
 
     // Construtor

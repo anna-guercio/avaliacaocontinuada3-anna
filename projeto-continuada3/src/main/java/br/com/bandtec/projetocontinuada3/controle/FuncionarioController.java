@@ -64,7 +64,7 @@ public class FuncionarioController {
             repository.delete(pilha.pop());
             return ResponseEntity.status(200).build();
         } else {
-            return ResponseEntity.status(204).body("Não há operações a serem desfeitas");
+            return ResponseEntity.status(204).body("Não tem nenhuma operação a ser desfeita");
         }
     }
 }
