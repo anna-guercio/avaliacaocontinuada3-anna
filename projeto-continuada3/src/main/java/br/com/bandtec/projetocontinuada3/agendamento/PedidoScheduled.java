@@ -1,7 +1,7 @@
 package br.com.bandtec.projetocontinuada3.agendamento;
 
 import br.com.bandtec.projetocontinuada3.repositorio.PedidoRepository;
-import br.com.bandtec.projetocontinuada3.util.FilaObj;
+import br.com.bandtec.projetocontinuada3.utils.FilaObj;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
